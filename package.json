@@ -7,6 +7,7 @@
   "scripts": {
     "test": "hut-build test",
     "serve": "hut-build serve",
+    "build": "hut-build build",
     "serve-test": "hut-build serve-test"
   },
   "repository": {
