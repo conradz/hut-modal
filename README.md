@@ -102,11 +102,13 @@ etc.
 
 ### `.hut-modal.modal-shown`
 
-The `.modal-shown` class is added to the `.modal` element when the modal is
+The `.modal-shown` class is added to the `.hut-modal` element when the modal is
 currently open.
 
-### `.hut-modal.modal-hidden` class is added to the `.modal` element after the modal
-is hidden.
+### `.hut-modal.modal-hidden`
+
+The `modal-hidden` class is added to the `.hut-modal` element after the modal is
+hidden.
 
 ## `.modal-dialog`
 
