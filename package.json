@@ -1,0 +1,37 @@
+{
+  "name": "hut-modal",
+  "version": "0.0.0",
+  "description": "HTML UI Toolkit modal component",
+  "main": "index.js",
+  "style": "style.css",
+  "scripts": {
+    "test": "hut-build test",
+    "serve": "hut-build serve",
+    "serve-test": "hut-build serve-test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/conradz/hut-modal.git"
+  },
+  "keywords": [
+    "ui",
+    "html",
+    "browser",
+    "browserify",
+    "modal"
+  ],
+  "author": "Conrad Zimmerman <me@conradz.com>",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/conradz/hut-modal/issues"
+  },
+  "dependencies": {
+    "chi-events": "0.0.2",
+    "chi-classes": "0.0.2"
+  },
+  "devDependencies": {
+    "chi-create": "0.0.1",
+    "tape": "~1.0.4",
+    "hut-build": "0.0.1"
+  }
+}
