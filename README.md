@@ -1,7 +1,11 @@
 # hut-modal
 
-HTML UI Toolkit modal component - Show modals in your app with JS.
+[![NPM](https://nodei.co/npm/hut-modal.png?compact=true)](https://nodei.co/npm/hut-modal/)
 
+[![Build Status](https://drone.io/github.com/conradz/hut-modal/status.png)](https://drone.io/github.com/conradz/hut-modal/latest)
+[![Dependency Status](https://gemnasium.com/conradz/hut-modal.png)](https://gemnasium.com/conradz/hut-modal)
+
+HTML UI Toolkit modal component - Show modals in your app with JS.
 
 ## Example
 
@@ -50,7 +54,6 @@ setTimeout(function() {
     myModal.hide();
 }, 5000);
 ```
-
 
 ## JS Reference
 
