@@ -1,6 +1,6 @@
 {
   "name": "hut-modal",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "HTML UI Toolkit modal component",
   "main": "index.js",
   "style": "style.css",
