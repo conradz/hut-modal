@@ -1,6 +1,9 @@
 ;(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/*global console */
+
 var Modal = require('../'),
-    events = require('chi-events');
+    events = require('chi-events'),
+    document = window.document;
 
 var modal = new Modal(document.querySelector('#example-modal')),
     show = document.querySelector('#show-modal');
@@ -16,7 +19,8 @@ modal.on('result', function(result) {
 },{"../":2,"chi-events":4}],2:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter,
     classes = require('chi-classes'),
-    events = require('chi-events');
+    events = require('chi-events'),
+    document = window.document;
 
 function Modal(element) {
     EventEmitter.call(this);
@@ -200,7 +204,8 @@ function classList() {
 
 module.exports = classList;
 },{}],4:[function(require,module,exports){
-var flatten = require('flatten-list');
+var flatten = require('flatten-list'),
+    document = window.document;
 
 function on(nodes, event, handler) {
     nodes.forEach(function(node) {
@@ -229,9 +234,14 @@ function once(nodes, event, handler) {
     return listener;
 }
 
-function trigger(nodes, event, detail) {
-    var e = document.createEvent('CustomEvent');
-    e.initCustomEvent(event, true, true, detail);
+function createEvent(event) {
+    var e = document.createEvent('Event');
+    e.initEvent(event, true, true);
+    return e;
+}
+
+function trigger(nodes, event) {
+    var e = createEvent(event);
     nodes.forEach(function(node) {
         node.dispatchEvent(e);
     });
@@ -258,6 +268,56 @@ function events() {
 }
 
 module.exports = events;
+
+// Fix bug that occurs in at least IE 9 and 10
+// Some newly-created nodes will not fire events until they are added to an
+// element. After they are added to an element, they will work even after they
+// are removed.
+//
+// The fix is to create an empty container element. Before triggering an event
+// on any element that does not have a parent, add the element to the container
+// and immediately remove it.
+function checkTriggerBug() {
+    var a = document.createElement('div'),
+        called = false;
+
+    // Check if click event works on new DOM element
+    a.addEventListener('click', function() { called = true; }, false);
+    trigger([a], 'click');
+    if (called) {
+        return false;
+    }
+
+    // Check if event works on element after it is added to another
+    var b = document.createElement('div');
+    b.appendChild(a);
+    trigger([a], 'click');
+
+    // If it works now, it has the bug
+    return called;
+}
+
+function fixTrigger() {
+    var container = document.createElement('div');
+
+    function trigger(nodes, event) {
+        var e = createEvent(event);
+        nodes.forEach(function(node) {
+            if (node.parentNode === null) {
+                container.appendChild(node);
+                container.removeChild(node);
+            }
+
+            node.dispatchEvent(e);
+        });
+    }
+
+    return trigger;
+}
+
+if (checkTriggerBug()) {
+    trigger = fixTrigger();
+}
 },{"flatten-list":5}],5:[function(require,module,exports){
 function add(array, value) {
     if (typeof value.length === 'number') {
