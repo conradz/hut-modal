@@ -1,5 +1,8 @@
+/*global console */
+
 var Modal = require('../'),
-    events = require('chi-events');
+    events = require('chi-events'),
+    document = window.document;
 
 var modal = new Modal(document.querySelector('#example-modal')),
     show = document.querySelector('#show-modal');

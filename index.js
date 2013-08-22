@@ -1,6 +1,7 @@
 var EventEmitter = require('events').EventEmitter,
     classes = require('chi-classes'),
-    events = require('chi-events');
+    events = require('chi-events'),
+    document = window.document;
 
 function Modal(element) {
     EventEmitter.call(this);

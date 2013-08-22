@@ -2,7 +2,8 @@ var test = require('tape'),
     create = require('chi-create'),
     classes = require('chi-classes'),
     events = require('chi-events'),
-    Modal = require('./');
+    Modal = require('./'),
+    document = window.document;
 
 function createStructure() {
     return create('div', { 'class': 'hut-modal' },
