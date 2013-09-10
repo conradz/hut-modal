@@ -3,13 +3,12 @@
   "version": "0.0.1",
   "description": "HTML UI Toolkit modal component",
   "main": "index.js",
-  "style": "style.css",
+  "style": "index.css",
   "scripts": {
     "test": "hut-build test",
     "serve": "hut-build serve",
     "lint": "hut-build lint",
-    "build": "hut-build build",
-    "serve-test": "hut-build serve-test"
+    "build": "hut-build build"
   },
   "repository": {
     "type": "git",
@@ -33,7 +32,7 @@
   },
   "devDependencies": {
     "chi-create": "0.0.1",
-    "tape": "~1.0.4",
-    "hut-build": "0.0.3"
+    "tape": "~1.1.0",
+    "hut-build": "~0.1.2"
   }
 }
