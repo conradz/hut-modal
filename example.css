@@ -1,0 +1,226 @@
+/*
+ * Default base settings
+ * Many of these settings are from Bootstrap (https://github.com/twbs/bootstrap)
+ */
+
+:root {
+  /* Font settings for body */
+  var-font-family-base: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  var-font-size-base: 16px;
+  var-line-height-base: 1.5;
+  /* Font settings for headings */
+  var-font-family-heading: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  var-line-height-heading: 1.2;
+  var-font-weight-heading: 500;
+  var-font-size-h1: 2.6em;
+  var-font-size-h2: 2.15em;
+  var-font-size-h3: 1.70em;
+  var-font-size-h4: 1.25em;
+  var-font-size-h5: 1em;
+  var-font-size-h6: 0.85em;
+  /* Color for <hr> element */
+  var-hr-color: #CCC;
+}
+
+/* Basic layout styles */
+
+*,
+*:before,
+*:after {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+/* Root and body element fill whole window and have no margin */
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Enable scroll on body element */
+
+body {
+  overflow: auto;
+}
+
+/* Element definitions for HTML5 elements, taken from normalize.css */
+
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+main,
+nav,
+section,
+summary {
+  display: block;
+}
+
+audio,
+canvas,
+video {
+  display: inline-block;
+}
+
+/* Fonts and other typographical settings */
+
+html {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 500;
+  line-height: 1.2;
+  margin: 20px 0 10px 0;
+}
+
+h1 {
+  font-size: 2.6em;
+}
+
+h2 {
+  font-size: 2.15em;
+}
+
+h3 {
+  font-size: 1.70em;
+}
+
+h4 {
+  font-size: 1.25em;
+}
+
+h5 {
+  font-size: 1em;
+}
+
+h6 {
+  font-size: 0.85em;
+}
+
+p {
+  margin: 0 0 10px 0;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #CCC;
+  height: 0;
+}
+
+/* Basic list styles */
+
+ul,
+ol {
+  margin: 0;
+  padding: 0 0 0 40px;
+}
+
+:root {
+  /* Color for the backdrop that fills the screen */
+  var-modal-backdrop-color: rgba(220, 220, 220, 0.9);
+  /* Color for the dialog border */
+  var-modal-border-color: #999;
+  /* Color for the lines between the heading and footer and the content */
+  var-modal-separator-color: #CCC;
+  var-modal-border-radius: 5px;
+  /* Maximum width of the modal dialog */
+  var-modal-width: 500px;
+  /* Offset from the top and bottom of the screen */
+  var-modal-offset-y: 15px;
+  /* Offset from the left and right of the screen */
+  var-modal-offset-x: 10px;
+  /* Left and right padding for the dialog */
+  var-modal-padding: 20px;
+  var-modal-shadow-size: 10px;
+  var-modal-shadow-left: 0;
+  var-modal-shadow-right: 0;
+  var-modal-shadow-blur: 20px;
+  var-modal-shadow-color: #BBB;
+  /* Time for the slide-down animation */
+  var-modal-slide-time: 0.3s;
+}
+
+/* Disable scroll when modal is open */
+
+body.hut-modal-open {
+  overflow: hidden;
+}
+
+.hut-modal {
+  position: fixed;
+  overflow: hidden;
+  /* Position 100% above the screen so it can slide down */
+  top: -100%;
+  left: 0;
+  /* Hide modal until it is shown */
+  height: 0;
+  width: 100%;
+  /* Slide down from top */
+  /* Wait until it is slid up to change the height */
+  transition: top 0.3s,
+        height 0 0.3s;
+  background-color: rgba(220, 220, 220, 0.9);
+}
+
+.hut-modal.modal-shown {
+  top: 0;
+  height: 100%;
+  padding: 15px 10px;
+  overflow: auto;
+  /* Slide down from the top */
+  /* Do not transition height when closing */
+  transition: top 0.3s;
+}
+
+.hut-modal .modal-dialog {
+  max-width: 500px;
+  margin: 0 auto;
+  background-color: #FFF;
+  border: 1px solid #999;
+  border-radius: 5px;
+  box-shadow: 0
+        0
+        20px
+        10px
+        #BBB;
+}
+
+.hut-modal .modal-header {
+  padding: 0 20px;
+  border-bottom: 1px solid #CCC;
+}
+
+.hut-modal .modal-content {
+  padding: 10px 20px;
+  overflow: hidden;
+}
+
+.hut-modal .modal-footer {
+  padding: 10px 20px;
+  border-top: 1px solid #CCC;
+  text-align: right;
+}
+
+.container {
+  margin: 0 auto;
+  padding-bottom: 10px;
+  max-width: 600px;
+}
