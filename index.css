@@ -1,39 +1,72 @@
-.hut-modal {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
+@import "hut-base";
+@import "./variables";
 
+/* Disable scroll when modal is open */
+body.hut-modal-open {
+    overflow: hidden;
+}
+
+.hut-modal {
     position: fixed;
     overflow: hidden;
-    top: 0;
-    left: 0;
-    height: 0;
-    width: 0;
 
-    background-color: rgba(50, 50, 50, 0.3);
+    /* Position 100% above the screen so it can slide down */
+    top: -100%;
+    left: 0;
+
+    /* Hide modal until it is shown */
+    height: 0;
+    width: 100%;
+
+    /* Slide down from top */
+    /* Wait until it is slid up to change the height */
+    transition:
+        top var(modal-slide-time),
+        height 0 var(modal-slide-time);
+
+    background-color: var(modal-backdrop-color);
 }
 
 .hut-modal.modal-shown {
+    top: 0;
     height: 100%;
-    width: 100%;
-
-    padding: 0 10px;
+    padding: var(modal-offset-y) var(modal-offset-x);
     overflow: auto;
+
+    /* Slide down from the top */
+    /* Do not transition height when closing */
+    transition: top var(modal-slide-time);
 }
 
-.modal-dialog {
-    border: 1px solid #eee;
-    max-width: 600px;
-    margin: 10px auto;
-    padding: 0 10px;
+.hut-modal .modal-dialog {
+    max-width: var(modal-width);
+    margin: 0 auto;
 
     background-color: #FFF;
+
+    border: 1px solid var(modal-border-color);
+    border-radius: var(modal-border-radius);
+
+    box-shadow:
+        var(modal-shadow-left)
+        var(modal-shadow-right)
+        var(modal-shadow-blur)
+        var(modal-shadow-size)
+        var(modal-shadow-color);
 }
 
-.modal-header {
-    border-bottom: 1px solid #EEE;
+.hut-modal .modal-header {
+    padding: 0 var(modal-padding);
+    border-bottom: 1px solid var(modal-separator-color);
 }
 
-.modal-footer {
-    border-top: 1px solid #EEE;
+.hut-modal .modal-content {
+    padding: 10px var(modal-padding);
+    overflow: hidden;
+}
+
+.hut-modal .modal-footer {
+    padding: 10px var(modal-padding);
+    border-top: 1px solid var(modal-separator-color);
+    text-align: right;
 }

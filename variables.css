@@ -1,0 +1,28 @@
+:root {
+    /* Color for the backdrop that fills the screen */
+    var-modal-backdrop-color: rgba(220, 220, 220, 0.9);
+    /* Color for the dialog border */
+    var-modal-border-color: #999;
+    /* Color for the lines between the heading and footer and the content */
+    var-modal-separator-color: #CCC;
+
+    var-modal-border-radius: 5px;
+
+    /* Maximum width of the modal dialog */
+    var-modal-width: 500px;
+    /* Offset from the top and bottom of the screen */
+    var-modal-offset-y: 15px;
+    /* Offset from the left and right of the screen */
+    var-modal-offset-x: 10px;
+    /* Left and right padding for the dialog */
+    var-modal-padding: 20px;
+
+    var-modal-shadow-size: 10px;
+    var-modal-shadow-left: 0;
+    var-modal-shadow-right: 0;
+    var-modal-shadow-blur: 20px;
+    var-modal-shadow-color: #BBB;
+
+    /* Time for the slide-down animation */
+    var-modal-slide-time: 0.3s;
+}

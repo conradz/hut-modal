@@ -8,17 +8,15 @@ function Modal(element) {
 
     this.element = element;
 
-    if (element.parentNode) {
-        element.parentNode.removeChild(element);
-    }
-
-    document.body.appendChild(element);
-
     var self = this,
         results = element.querySelectorAll('[data-result]');
     events(results).on('click', function(e) {
         e.preventDefault();
-        self._result(this.getAttribute('data-result'));
+        self._clicked(this);
+    });
+
+    this.on('result', function() {
+        this.hide();
     });
 }
 
@@ -26,9 +24,8 @@ Modal.prototype = Object.create(EventEmitter.prototype);
 Modal.prototype.constructor = Modal;
 
 Modal.prototype.show = function() {
-    classes(this.element)
-        .remove('modal-hidden')
-        .add('modal-shown');
+    classes(this.element).add('modal-shown');
+    classes(document.body).add('hut-modal-open');
 
     var focus = this.element.querySelector('[autofocus]');
     if (focus) {
@@ -39,19 +36,14 @@ Modal.prototype.show = function() {
 };
 
 Modal.prototype.hide = function() {
-    classes(this.element)
-        .remove('modal-shown')
-        .add('modal-hidden');
+    classes(this.element).remove('modal-shown');
+    classes(document.body).remove('hut-modal-open');
+
     this.emit('hide');
 };
 
-Modal.prototype.destroy = function() {
-    this.hide();
-    document.body.removeChild(this.element);
-};
-
-Modal.prototype._result = function(result) {
-    this.hide();
+Modal.prototype._clicked = function(button) {
+    var result = button.getAttribute('data-result');
     this.emit('result', result);
 };
 
