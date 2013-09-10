@@ -1,0 +1,3 @@
+[submodule "example/build"]
+	path = example/build
+	url = https://github.com/conradz/hut-modal.git
