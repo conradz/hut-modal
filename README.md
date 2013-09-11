@@ -7,7 +7,7 @@
 
 HTML UI Toolkit modal component - Show modals in your app with JS.
 
-Check out the [example](http://conradz.github.io/hut-base/)!
+Check out the [example](http://conradz.github.io/hut-modal/)!
 
 ## Example
 
