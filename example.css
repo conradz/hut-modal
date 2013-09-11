@@ -245,6 +245,7 @@ body.hut-modal-open {
 
 .container {
   margin: 0 auto;
-  padding-bottom: 10px;
+  padding: 0 10px 10px 10px;
   max-width: 600px;
+  overflow: hidden;
 }

@@ -67,6 +67,7 @@ Modal.prototype._clicked = function(button) {
 };
 
 module.exports = Modal;
+
 },{"chi-classes":3,"chi-events":4,"events":6}],3:[function(require,module,exports){
 var CLASS_SEP = /\s+/g;
 
