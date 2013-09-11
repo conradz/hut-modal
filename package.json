@@ -29,7 +29,7 @@
   "dependencies": {
     "chi-events": "0.0.3",
     "chi-classes": "0.0.2",
-    "hut-base": "0.0.1"
+    "hut-base": "0.0.2"
   },
   "devDependencies": {
     "chi-create": "0.0.1",
