@@ -1,10 +1,11 @@
-var EventEmitter = require('events').EventEmitter,
+var Emitter = require('emitter-component'),
     classes = require('chi-classes'),
     events = require('chi-events'),
+    inheritPrototype = require('mout/lang/inheritPrototype'),
     document = window.document;
 
 function Modal(element) {
-    EventEmitter.call(this);
+    Emitter.call(this);
 
     this.element = element;
 
@@ -20,8 +21,7 @@ function Modal(element) {
     });
 }
 
-Modal.prototype = Object.create(EventEmitter.prototype);
-Modal.prototype.constructor = Modal;
+inheritPrototype(Modal, Emitter);
 
 Modal.prototype.show = function() {
     classes(this.element).add('modal-shown');
