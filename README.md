@@ -5,6 +5,8 @@
 [![Build Status](https://drone.io/github.com/conradz/hut-modal/status.png)](https://drone.io/github.com/conradz/hut-modal/latest)
 [![Dependency Status](https://gemnasium.com/conradz/hut-modal.png)](https://gemnasium.com/conradz/hut-modal)
 
+[![Selenium Test Status](https://saucelabs.com/browser-matrix/hut-modal.svg)](https://saucelabs.com/u/hut-modal)
+
 HTML UI Toolkit modal component - Show modals in your app with JS.
 
 Check out the [example](http://conradz.github.io/hut-modal/)!
