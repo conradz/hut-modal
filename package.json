@@ -27,13 +27,13 @@
     "url": "https://github.com/conradz/hut-modal/issues"
   },
   "dependencies": {
-    "chi-events": "0.0.3",
-    "chi-classes": "0.0.2",
+    "chi-events": "0.0.4",
+    "chi-classes": "0.0.3",
     "hut-base": "0.0.2"
   },
   "devDependencies": {
-    "chi-create": "0.0.1",
-    "tape": "~1.1.0",
-    "hut-build": "~0.1.2"
+    "chi-create": "0.0.2",
+    "tape": "~1.1.1",
+    "hut-build": "~0.1.5"
   }
 }
