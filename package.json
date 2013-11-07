@@ -28,14 +28,14 @@
   },
   "dependencies": {
     "chi-events": "~0.1.0",
-    "chi-classes": "0.0.3",
+    "chi-classes": "0.0.4",
     "hut-base": "0.0.2",
     "emitter-component": "~1.0.1",
     "mout": "~0.7.1"
   },
   "devDependencies": {
     "chi-create": "0.0.2",
-    "tape": "~1.1.1",
+    "tape": "~2.1.0",
     "hut-build": "~0.2.0"
   }
 }
