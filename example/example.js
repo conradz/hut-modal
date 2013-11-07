@@ -1,3 +1,5 @@
+'use strict';
+
 /*global console */
 
 var Modal = require('../'),

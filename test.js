@@ -1,3 +1,5 @@
+'use strict';
+
 var test = require('tape'),
     create = require('chi-create'),
     classes = require('chi-classes'),

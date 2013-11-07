@@ -6,7 +6,7 @@
   "style": "index.css",
   "scripts": {
     "test": "hut-build test",
-    "serve": "hut-build serve",
+    "start": "hut-build serve",
     "lint": "hut-build lint",
     "build": "hut-build build"
   },
@@ -36,6 +36,6 @@
   "devDependencies": {
     "chi-create": "0.0.2",
     "tape": "~1.1.1",
-    "hut-build": "~0.1.5"
+    "hut-build": "~0.2.0"
   }
 }
