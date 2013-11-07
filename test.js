@@ -1,10 +1,11 @@
 'use strict';
 
-var test = require('tape'),
+var tape = require('tape'),
     create = require('chi-create'),
     classes = require('chi-classes'),
     events = require('chi-events'),
-    Modal = require('./');
+    Modal = require('./'),
+    body = window.document.body;
 
 function createStructure() {
     return create('div', { 'class': 'hut-modal' },
@@ -23,9 +24,18 @@ function createStructure() {
     );
 }
 
-test('show a modal', function(t) {
-    var el = createStructure(),
-        modal = new Modal(el),
+function test(name, func) {
+    tape(name, function(t) {
+        var dom = createStructure();
+        // Add to body to allow event bubbling
+        body.appendChild(dom);
+        func(t, dom);
+        body.removeChild(dom);
+    });
+}
+
+test('show a modal', function(t, el) {
+    var modal = new Modal(el),
         fired = false;
     modal.on('show', function() { fired = true; });
     modal.show();
@@ -35,9 +45,8 @@ test('show a modal', function(t) {
     t.end();
 });
 
-test('hide a modal', function(t) {
-    var el = createStructure(),
-        modal = new Modal(el),
+test('hide a modal', function(t, el) {
+    var modal = new Modal(el),
         fired = false;
     modal.on('hide', function() { fired = true; });
     modal.show();
@@ -50,9 +59,8 @@ test('hide a modal', function(t) {
     t.end();
 });
 
-test('trigger result when data-result is clicked', function(t) {
-    var el = createStructure(),
-        modal = new Modal(el),
+test('trigger result when data-result is clicked', function(t, el) {
+    var modal = new Modal(el),
         result = null;
     modal.on('result', function(r) { result = r; });
     modal.show();
@@ -64,9 +72,8 @@ test('trigger result when data-result is clicked', function(t) {
     t.end();
 });
 
-test('hide modal when result is clicked', function(t) {
-    var el = createStructure(),
-        modal = new Modal(el),
+test('hide modal when result is clicked', function(t, el) {
+    var modal = new Modal(el),
         hidden = false;
     modal.on('hide', function() { hidden = true; });
     modal.show();

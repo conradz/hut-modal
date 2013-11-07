@@ -6,17 +6,20 @@ var Emitter = require('emitter-component'),
     inheritPrototype = require('mout/lang/inheritPrototype'),
     document = window.document;
 
+module.exports = Modal;
+
 function Modal(element) {
     Emitter.call(this);
 
     this.element = element;
 
-    var self = this,
-        results = element.querySelectorAll('[data-result]');
-    events(results).on('click', function(e) {
-        e.preventDefault();
-        self._clicked(this);
-    });
+    var self = this;
+    events(element)
+        .children('[data-result]')
+        .on('click', function(e) {
+            e.preventDefault();
+            self._clicked(this);
+        });
 
     this.on('result', function() {
         this.hide();
@@ -48,5 +51,3 @@ Modal.prototype._clicked = function(button) {
     var result = button.getAttribute('data-result');
     this.emit('result', result);
 };
-
-module.exports = Modal;
