@@ -22,7 +22,7 @@ body.hut-modal-open {
     /* Wait until it is slid up to change the height */
     transition:
         top var(modal-slide-time),
-        height 0 var(modal-slide-time);
+        height 0s var(modal-slide-time);
 
     background-color: var(modal-backdrop-color);
 }
