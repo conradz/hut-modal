@@ -1,4 +1,6 @@
 ;(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+'use strict';
+
 /*global console */
 
 var Modal = require('../'),
@@ -16,31 +18,36 @@ modal.on('result', function(result) {
     console.log('Result: ' + result);
 });
 
-},{"../":2,"chi-events":4}],2:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter,
+},{"../":2,"chi-events":7}],2:[function(require,module,exports){
+'use strict';
+
+var Emitter = require('emitter-component'),
     classes = require('chi-classes'),
     events = require('chi-events'),
+    inheritPrototype = require('mout/lang/inheritPrototype'),
     document = window.document;
 
+module.exports = Modal;
+
 function Modal(element) {
-    EventEmitter.call(this);
+    Emitter.call(this);
 
     this.element = element;
 
-    var self = this,
-        results = element.querySelectorAll('[data-result]');
-    events(results).on('click', function(e) {
-        e.preventDefault();
-        self._clicked(this);
-    });
+    var self = this;
+    events(element)
+        .children('[data-result]')
+        .on('click', function(e) {
+            e.preventDefault();
+            self._clicked(this);
+        });
 
     this.on('result', function() {
         this.hide();
     });
 }
 
-Modal.prototype = Object.create(EventEmitter.prototype);
-Modal.prototype.constructor = Modal;
+inheritPrototype(Modal, Emitter);
 
 Modal.prototype.show = function() {
     classes(this.element).add('modal-shown');
@@ -66,201 +73,172 @@ Modal.prototype._clicked = function(button) {
     this.emit('result', result);
 };
 
-module.exports = Modal;
+},{"chi-classes":3,"chi-events":7,"emitter-component":10,"mout/lang/inheritPrototype":26}],3:[function(require,module,exports){
+var union = require('mout/array/union'),
+    difference = require('mout/array/difference'),
+    xor = require('mout/array/xor'),
+    every = require('mout/array/every'),
+    contains = require('mout/array/contains'),
+    forEach = require('mout/array/forEach'),
+    flatten = require('flatten-list');
 
-},{"chi-classes":3,"chi-events":4,"events":6}],3:[function(require,module,exports){
 var CLASS_SEP = /\s+/g;
 
-function iterate(value, action, data) {
-    // Check for psuedo-array objects
-    if (value && typeof value.length === 'number') {
-        for (var i = 0; i < value.length; i++) {
-            if (iterate(value[i], action, data) === false) {
-                // Break loop on explicit false return
-                return false;
-            }
-        }
-    } else {
-        return action(value, data);
-    }
-}
-
 function split(input) {
-    if (!input) {
-        return [];
-    }
-
-    return input.split(CLASS_SEP);
+    return input ? input.split(CLASS_SEP) : [];
 }
 
-function add(node, classes) {
-    var existing = split(node.className),
-        modified = false;
-
-    for (var i = 0; i < classes.length; i++) {
-        var c = classes[i];
-        if (existing.indexOf(c) === -1) {
-            existing.push(c);
-            modified = true;
-        }
+function modifier(action) {
+    function modify(node) {
+        var existing = split(node.className);
+        node.className = action(existing, this).join(' ');
     }
 
-    if (modified) {
-        node.className = existing.join(' ');
-    }
-}
+    return function(classes) {
+        classes = split(classes);
+        forEach(this.nodes, modify, classes);
 
-function remove(node, classes) {
-    var existing = split(node.className),
-        modified = false;
-
-    for (var i = 0; i < classes.length; i++) {
-        var c = classes[i],
-            index;
-
-        while ((index = existing.indexOf(c)) !== -1) {
-            existing.splice(index, 1);
-            modified = true;
-        }
-    }
-
-    if (modified) {
-        node.className = existing.join(' ');
-    }
-}
-
-function toggle(node, classes) {
-    var existing = split(node.className);
-
-    for (var i = 0; i < classes.length; i++) {
-        var c = classes[i],
-            index = existing.indexOf(c);
-
-        if (index === -1) {
-            existing.push(c);
-        } else {
-            do {
-                existing.splice(i, 1);
-                index = existing.indexOf(c);
-            } while (index !== -1)
-        }
-    }
-
-    node.className = existing.join(' ');
-}
-
-function has(node, classes) {
-    var existing = split(node.className);
-
-    for (var i = 0; i < classes.length; i++) {
-        if (existing.indexOf(classes[i]) === -1) {
-            return false;
-        }
-    }
+        return this;
+    };
 }
 
 function ClassList(nodes) {
     this.nodes = nodes;
 }
 
-ClassList.prototype.add = function(classes) {
-    classes = split(classes);
-    iterate(this.nodes, add, classes);
+ClassList.prototype.add = modifier(union);
+ClassList.prototype.remove = modifier(difference);
+ClassList.prototype.toggle = modifier(xor);
 
-    return this;
-};
-
-ClassList.prototype.remove = function(classes) {
-    classes = split(classes);
-    iterate(this.nodes, remove, classes);
-
-    return this;
-};
-
-ClassList.prototype.toggle = function(classes) {
-    classes = split(classes);
-    iterate(this.nodes, toggle, classes);
+ClassList.prototype.set = function(classes, value) {
+    if (value) {
+        this.add(classes);
+    } else {
+        this.remove(classes);
+    }
 
     return this;
 };
 
 ClassList.prototype.has = function(classes) {
     classes = split(classes);
-    return iterate(this.nodes, has, classes) !== false;
+
+    return every(this.nodes, function(node) {
+        var existing = split(node.className);
+        return every(classes, function(c) { return contains(existing, c); });
+    });
 };
 
-var slice = Array.prototype.slice;
 function classList() {
-    var nodes = slice.call(arguments);
-    return new ClassList(nodes);
+    return new ClassList(flatten(arguments));
 }
 
 module.exports = classList;
-},{}],4:[function(require,module,exports){
-var flatten = require('flatten-list'),
-    document = window.document;
 
-function on(nodes, event, handler) {
-    nodes.forEach(function(node) {
-        node.addEventListener(event, handler, false);
-    });
-
-    return {
-        remove: function() { remove(nodes, event, handler); }
+},{"flatten-list":4,"mout/array/contains":13,"mout/array/difference":14,"mout/array/every":15,"mout/array/forEach":17,"mout/array/union":20,"mout/array/xor":22}],4:[function(require,module,exports){
+var isList;
+if (typeof window !== 'undefined') {
+    // Running in a browser
+    isList = (function(window, Node) {
+        return function(value) {
+            return (
+                value &&
+                typeof value === 'object' &&
+                typeof value.length === 'number' &&
+                !(value instanceof Node) &&
+                value !== window);
+        }
+    })(window, window.Node);
+} else {
+    // Running in non-browser environment
+    isList = function(value) {
+        return (
+            value &&
+            typeof value === 'object' &&
+            typeof value.length === 'number');
     };
 }
 
-function remove(nodes, event, handler) {
-    nodes.forEach(function(node) {
-        node.removeEventListener(event, handler, false);
-    });
+
+function add(array, value) {
+    if (isList(value)) {
+        for (var i = 0; i < value.length; i++) {
+            add(array, value[i]);
+        }
+    } else {
+        array.push(value);
+    }
 }
 
-function once(nodes, event, handler) {
-    var listener;
-
-    listener = on(nodes, event, function(e) {
-        listener.remove();
-        handler.call(this, e);
-    });
-
-    return listener;
+function flatten(value) {
+    var items = [];
+    add(items, value);
+    return items;
 }
 
-function createEvent(event) {
-    var e = document.createEvent('Event');
-    e.initEvent(event, true, true);
-    return e;
+module.exports = flatten;
+
+},{}],5:[function(require,module,exports){
+'use strict';
+
+var matches = require('chi-matches');
+
+module.exports = DelegateEvents;
+
+function DelegateEvents(parent, filter) {
+    this.parent = parent;
+    this.filter = filter;
 }
 
-function trigger(nodes, event) {
-    var e = createEvent(event);
-    nodes.forEach(function(node) {
-        node.dispatchEvent(e);
-    });
-}
-
-function Events(nodes) {
-    this.nodes = nodes;
-}
-
-Events.prototype.on = function(event, handler) {
-    return on(this.nodes, event, handler);
+DelegateEvents.prototype.on = function(event, handler) {
+    return this.parent.on(event, wrap(this.filter, handler));
 };
 
-Events.prototype.once = function(event, handler) {
-    return once(this.nodes, event, handler);
+DelegateEvents.prototype.once = function(event, handler) {
+    var ref;
+    function handle(e) {
+        /*jshint validthis: true */
+        ref.remove();
+        return handler.call(this, e);
+    }
+
+    ref = this.on(event, handle);
+    return ref;
 };
 
-Events.prototype.trigger = function(event, detail) {
-    return trigger(this.nodes, event, detail);
-};
+function getFilter(filter) {
+    if (typeof filter === 'function') {
+        return filter;
+    }
 
-function events() {
-    return new Events(flatten(arguments));
+    return function(node) {
+        return matches(node, filter);
+    };
 }
 
-module.exports = events;
+function wrap(filter, handler) {
+    filter = getFilter(filter);
+
+    function walk(parent, node, e) {
+        if (parent === node) {
+            return;
+        } else if (filter(node)) {
+            return handler.call(node, e);
+        } else if (node.parentNode) {
+            return walk(parent, node.parentNode, e);
+        }
+    }
+
+    function wrapper(e) {
+        /*jshint validthis: true */
+        return walk(this, e.target, e);
+    }
+
+    return wrapper;
+}
+
+},{"chi-matches":8}],6:[function(require,module,exports){
+'use strict';
 
 // Fix bug that occurs in at least IE 9 and 10
 // Some newly-created nodes will not fire events until they are added to an
@@ -270,7 +248,17 @@ module.exports = events;
 // The fix is to create an empty container element. Before triggering an event
 // on any element that does not have a parent, add the element to the container
 // and immediately remove it.
-function checkTriggerBug() {
+//
+
+var forEach = require('mout/array/forEach'),
+    document = window.document;
+
+module.exports = {
+    check: check,
+    fix: fix
+};
+
+function check(trigger) {
     var a = document.createElement('div'),
         called = false;
 
@@ -290,294 +278,926 @@ function checkTriggerBug() {
     return called;
 }
 
-function fixTrigger() {
+function fix(trigger) {
     var container = document.createElement('div');
 
-    function trigger(nodes, event) {
-        var e = createEvent(event);
-        nodes.forEach(function(node) {
+    function fixedTrigger(nodes, event) {
+        // Initialize the nodes by adding and removing the nodes from the
+        // container
+        forEach(nodes, function(node) {
             if (node.parentNode === null) {
                 container.appendChild(node);
                 container.removeChild(node);
             }
-
-            node.dispatchEvent(e);
         });
+
+        return trigger(nodes, event);
     }
 
-    return trigger;
+    return fixedTrigger;
 }
 
-if (checkTriggerBug()) {
-    trigger = fixTrigger();
+},{"mout/array/forEach":17}],7:[function(require,module,exports){
+'use strict';
+
+var flatten = require('flatten-list'),
+    forEach = require('mout/array/forEach'),
+    ieBug = require('./ie-bug'),
+    document = window.document,
+    DelegateEvents = require('./delegate');
+
+if (ieBug.check(trigger)) {
+    trigger = ieBug.fix(trigger);
 }
-},{"flatten-list":5}],5:[function(require,module,exports){
-function add(array, value) {
-    if (typeof value.length === 'number') {
-        for (var i = 0; i < value.length; i++) {
-            add(array, value[i]);
+
+module.exports = events;
+function events() {
+    return new Events(flatten(arguments));
+}
+
+function Events(nodes) {
+    this.nodes = nodes;
+}
+
+Events.prototype.on = function(event, handler) {
+    return on(this.nodes, event, handler);
+};
+
+Events.prototype.trigger = function(event, detail) {
+    return trigger(this.nodes, event, detail);
+};
+
+Events.prototype.once = function(event, handler) {
+    var ref = this.on(event, wrapped);
+    return ref;
+
+    function wrapped(e) {
+        /*jshint validthis: true */
+        ref.remove();
+        return handler.call(this, e);
+    }
+};
+
+Events.prototype.children = function(filter) {
+    return new DelegateEvents(this, filter);
+};
+
+function on(nodes, event, handler) {
+    forEach(nodes, function(node) {
+        node.addEventListener(event, handler, false);
+    });
+
+    function removeListener() {
+        remove(nodes, event, handler);
+    }
+
+    return {
+        remove: removeListener
+    };
+}
+
+function remove(nodes, event, handler) {
+    forEach(nodes, function(node) {
+        node.removeEventListener(event, handler, false);
+    });
+}
+
+function trigger(nodes, event) {
+    var e = createEvent(event);
+    forEach(nodes, function(node) {
+        node.dispatchEvent(e);
+    });
+}
+
+function createEvent(event) {
+    var e = document.createEvent('Event');
+    e.initEvent(event, true, true);
+    return e;
+}
+
+},{"./delegate":5,"./ie-bug":6,"flatten-list":9,"mout/array/forEach":17}],8:[function(require,module,exports){
+// Get the right method, including vendor prefixes
+var proto = Element.prototype,
+    method = (
+        proto.matches ||
+        proto.matchesSelector ||
+        proto.mozMatchesSelector ||
+        proto.msMatchesSelector ||
+        proto.webkitMatchesSelector);
+
+function matches(element, selector) {
+    return method.call(element, selector);
+}
+
+// Work around IE 9 bug where it always returns false when not attached to
+// another DOM node.
+
+// Check if the bug exists in this browser
+function checkBug() {
+    // Check if it works on newly created node (fails in IE 9)
+    var a = document.createElement('div');
+    if (method.call(a, 'div')) {
+        return false;
+    }
+
+    // Check if it works when node is appended to another node (works in IE 9)
+    var b = document.createElement('div');
+    a.appendChild(b);
+    return method.call(b, 'div');
+}
+
+// Return a workaround function to fix the bug.
+// Note that this will slow down matching, but only if the bug exists in this
+// browser.
+function workaround() {
+    var node = document.createElement('div');
+
+    function matches(element, selector) {
+        if (method.call(element, selector)) {
+            return true;
+        } else if (!element.parentNode) {
+            // If node is not attached, temporarily attach to node
+            node.appendChild(element);
+            var result = method.call(element, selector);
+            node.removeChild(element);
+            return result;
+        } else {
+            return false;
         }
-    } else {
-        array.push(value);
     }
+
+    return matches;
 }
 
-function flatten(value) {
-    var items = [];
-    add(items, value);
-    return items;
+if (method) {
+    module.exports = checkBug() ? workaround() : matches;
+} else {
+    // Not supported
+    module.exports = null;
 }
+},{}],9:[function(require,module,exports){
+module.exports=require(4)
+},{}],10:[function(require,module,exports){
 
-module.exports = flatten;
-},{}],6:[function(require,module,exports){
-var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
+/**
+ * Module dependencies.
+ */
 
-var EventEmitter = exports.EventEmitter = process.EventEmitter;
-var isArray = typeof Array.isArray === 'function'
-    ? Array.isArray
-    : function (xs) {
-        return Object.prototype.toString.call(xs) === '[object Array]'
-    }
-;
-function indexOf (xs, x) {
-    if (xs.indexOf) return xs.indexOf(x);
-    for (var i = 0; i < xs.length; i++) {
-        if (x === xs[i]) return i;
-    }
-    return -1;
-}
+var index = require('indexof');
 
-// By default EventEmitters will print a warning if more than
-// 10 listeners are added to it. This is a useful default which
-// helps finding memory leaks.
-//
-// Obviously not all Emitters should be limited to 10. This function allows
-// that to be increased. Set to zero for unlimited.
-var defaultMaxListeners = 10;
-EventEmitter.prototype.setMaxListeners = function(n) {
-  if (!this._events) this._events = {};
-  this._events.maxListeners = n;
+/**
+ * Expose `Emitter`.
+ */
+
+module.exports = Emitter;
+
+/**
+ * Initialize a new `Emitter`.
+ *
+ * @api public
+ */
+
+function Emitter(obj) {
+  if (obj) return mixin(obj);
 };
 
+/**
+ * Mixin the emitter properties.
+ *
+ * @param {Object} obj
+ * @return {Object}
+ * @api private
+ */
 
-EventEmitter.prototype.emit = function(type) {
-  // If there is no 'error' event listener then throw.
-  if (type === 'error') {
-    if (!this._events || !this._events.error ||
-        (isArray(this._events.error) && !this._events.error.length))
-    {
-      if (arguments[1] instanceof Error) {
-        throw arguments[1]; // Unhandled 'error' event
-      } else {
-        throw new Error("Uncaught, unspecified 'error' event.");
-      }
-      return false;
-    }
+function mixin(obj) {
+  for (var key in Emitter.prototype) {
+    obj[key] = Emitter.prototype[key];
   }
+  return obj;
+}
 
-  if (!this._events) return false;
-  var handler = this._events[type];
-  if (!handler) return false;
+/**
+ * Listen on the given `event` with `fn`.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
 
-  if (typeof handler == 'function') {
-    switch (arguments.length) {
-      // fast cases
-      case 1:
-        handler.call(this);
-        break;
-      case 2:
-        handler.call(this, arguments[1]);
-        break;
-      case 3:
-        handler.call(this, arguments[1], arguments[2]);
-        break;
-      // slower
-      default:
-        var args = Array.prototype.slice.call(arguments, 1);
-        handler.apply(this, args);
-    }
-    return true;
-
-  } else if (isArray(handler)) {
-    var args = Array.prototype.slice.call(arguments, 1);
-
-    var listeners = handler.slice();
-    for (var i = 0, l = listeners.length; i < l; i++) {
-      listeners[i].apply(this, args);
-    }
-    return true;
-
-  } else {
-    return false;
-  }
-};
-
-// EventEmitter is defined in src/node_events.cc
-// EventEmitter.prototype.emit() is also defined there.
-EventEmitter.prototype.addListener = function(type, listener) {
-  if ('function' !== typeof listener) {
-    throw new Error('addListener only takes instances of Function');
-  }
-
-  if (!this._events) this._events = {};
-
-  // To avoid recursion in the case that type == "newListeners"! Before
-  // adding it to the listeners, first emit "newListeners".
-  this.emit('newListener', type, listener);
-
-  if (!this._events[type]) {
-    // Optimize the case of one listener. Don't need the extra array object.
-    this._events[type] = listener;
-  } else if (isArray(this._events[type])) {
-
-    // Check for listener leak
-    if (!this._events[type].warned) {
-      var m;
-      if (this._events.maxListeners !== undefined) {
-        m = this._events.maxListeners;
-      } else {
-        m = defaultMaxListeners;
-      }
-
-      if (m && m > 0 && this._events[type].length > m) {
-        this._events[type].warned = true;
-        console.error('(node) warning: possible EventEmitter memory ' +
-                      'leak detected. %d listeners added. ' +
-                      'Use emitter.setMaxListeners() to increase limit.',
-                      this._events[type].length);
-        console.trace();
-      }
-    }
-
-    // If we've already got an array, just append.
-    this._events[type].push(listener);
-  } else {
-    // Adding the second element, need to change to array.
-    this._events[type] = [this._events[type], listener];
-  }
-
+Emitter.prototype.on =
+Emitter.prototype.addEventListener = function(event, fn){
+  this._callbacks = this._callbacks || {};
+  (this._callbacks[event] = this._callbacks[event] || [])
+    .push(fn);
   return this;
 };
 
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+/**
+ * Adds an `event` listener that will be invoked a single
+ * time then automatically removed.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
 
-EventEmitter.prototype.once = function(type, listener) {
+Emitter.prototype.once = function(event, fn){
   var self = this;
-  self.on(type, function g() {
-    self.removeListener(type, g);
-    listener.apply(this, arguments);
-  });
+  this._callbacks = this._callbacks || {};
 
+  function on() {
+    self.off(event, on);
+    fn.apply(this, arguments);
+  }
+
+  fn._off = on;
+  this.on(event, on);
   return this;
 };
 
-EventEmitter.prototype.removeListener = function(type, listener) {
-  if ('function' !== typeof listener) {
-    throw new Error('removeListener only takes instances of Function');
-  }
+/**
+ * Remove the given callback for `event` or all
+ * registered callbacks.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
 
-  // does not use listeners(), so no side effect of creating _events[type]
-  if (!this._events || !this._events[type]) return this;
+Emitter.prototype.off =
+Emitter.prototype.removeListener =
+Emitter.prototype.removeAllListeners =
+Emitter.prototype.removeEventListener = function(event, fn){
+  this._callbacks = this._callbacks || {};
 
-  var list = this._events[type];
-
-  if (isArray(list)) {
-    var i = indexOf(list, listener);
-    if (i < 0) return this;
-    list.splice(i, 1);
-    if (list.length == 0)
-      delete this._events[type];
-  } else if (this._events[type] === listener) {
-    delete this._events[type];
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.removeAllListeners = function(type) {
-  if (arguments.length === 0) {
-    this._events = {};
+  // all
+  if (0 == arguments.length) {
+    this._callbacks = {};
     return this;
   }
 
-  // does not use listeners(), so no side effect of creating _events[type]
-  if (type && this._events && this._events[type]) this._events[type] = null;
+  // specific event
+  var callbacks = this._callbacks[event];
+  if (!callbacks) return this;
+
+  // remove all handlers
+  if (1 == arguments.length) {
+    delete this._callbacks[event];
+    return this;
+  }
+
+  // remove specific handler
+  var i = index(callbacks, fn._off || fn);
+  if (~i) callbacks.splice(i, 1);
   return this;
 };
 
-EventEmitter.prototype.listeners = function(type) {
-  if (!this._events) this._events = {};
-  if (!this._events[type]) this._events[type] = [];
-  if (!isArray(this._events[type])) {
-    this._events[type] = [this._events[type]];
+/**
+ * Emit `event` with the given args.
+ *
+ * @param {String} event
+ * @param {Mixed} ...
+ * @return {Emitter}
+ */
+
+Emitter.prototype.emit = function(event){
+  this._callbacks = this._callbacks || {};
+  var args = [].slice.call(arguments, 1)
+    , callbacks = this._callbacks[event];
+
+  if (callbacks) {
+    callbacks = callbacks.slice(0);
+    for (var i = 0, len = callbacks.length; i < len; ++i) {
+      callbacks[i].apply(this, args);
+    }
   }
-  return this._events[type];
+
+  return this;
 };
 
-EventEmitter.listenerCount = function(emitter, type) {
-  var ret;
-  if (!emitter._events || !emitter._events[type])
-    ret = 0;
-  else if (typeof emitter._events[type] === 'function')
-    ret = 1;
-  else
-    ret = emitter._events[type].length;
-  return ret;
+/**
+ * Return array of callbacks for `event`.
+ *
+ * @param {String} event
+ * @return {Array}
+ * @api public
+ */
+
+Emitter.prototype.listeners = function(event){
+  this._callbacks = this._callbacks || {};
+  return this._callbacks[event] || [];
 };
 
-},{"__browserify_process":7}],7:[function(require,module,exports){
-// shim for using process in browser
+/**
+ * Check if this emitter has `event` handlers.
+ *
+ * @param {String} event
+ * @return {Boolean}
+ * @api public
+ */
 
-var process = module.exports = {};
+Emitter.prototype.hasListeners = function(event){
+  return !! this.listeners(event).length;
+};
 
-process.nextTick = (function () {
-    var canSetImmediate = typeof window !== 'undefined'
-    && window.setImmediate;
-    var canPost = typeof window !== 'undefined'
-    && window.postMessage && window.addEventListener
-    ;
+},{"indexof":11}],11:[function(require,module,exports){
 
-    if (canSetImmediate) {
-        return function (f) { return window.setImmediate(f) };
+var indexOf = [].indexOf;
+
+module.exports = function(arr, obj){
+  if (indexOf) return arr.indexOf(obj);
+  for (var i = 0; i < arr.length; ++i) {
+    if (arr[i] === obj) return i;
+  }
+  return -1;
+};
+},{}],12:[function(require,module,exports){
+
+
+    /**
+     * Appends an array to the end of another.
+     * The first array will be modified.
+     */
+    function append(arr1, arr2) {
+        if (arr2 == null) {
+            return arr1;
+        }
+
+        var pad = arr1.length,
+            i = -1,
+            len = arr2.length;
+        while (++i < len) {
+            arr1[pad + i] = arr2[i];
+        }
+        return arr1;
+    }
+    module.exports = append;
+
+
+},{}],13:[function(require,module,exports){
+var indexOf = require('./indexOf');
+
+    /**
+     * If array contains values.
+     */
+    function contains(arr, val) {
+        return indexOf(arr, val) !== -1;
+    }
+    module.exports = contains;
+
+
+},{"./indexOf":18}],14:[function(require,module,exports){
+var unique = require('./unique');
+var filter = require('./filter');
+var some = require('./some');
+var contains = require('./contains');
+
+
+    /**
+     * Return a new Array with elements that aren't present in the other Arrays.
+     */
+    function difference(arr) {
+        var arrs = Array.prototype.slice.call(arguments, 1),
+            result = filter(unique(arr), function(needle){
+                return !some(arrs, function(haystack){
+                    return contains(haystack, needle);
+                });
+            });
+        return result;
     }
 
-    if (canPost) {
-        var queue = [];
-        window.addEventListener('message', function (ev) {
-            if (ev.source === window && ev.data === 'process-tick') {
-                ev.stopPropagation();
-                if (queue.length > 0) {
-                    var fn = queue.shift();
-                    fn();
-                }
-            }
-        }, true);
+    module.exports = difference;
 
-        return function nextTick(fn) {
-            queue.push(fn);
-            window.postMessage('process-tick', '*');
+
+
+},{"./contains":13,"./filter":16,"./some":19,"./unique":21}],15:[function(require,module,exports){
+var makeIterator = require('../function/makeIterator_');
+
+    /**
+     * Array every
+     */
+    function every(arr, callback, thisObj) {
+        callback = makeIterator(callback, thisObj);
+        var result = true;
+        if (arr == null) {
+            return result;
+        }
+
+        var i = -1, len = arr.length;
+        while (++i < len) {
+            // we iterate over sparse items since there is no way to make it
+            // work properly on IE 7-8. see #64
+            if (!callback(arr[i], i, arr) ) {
+                result = false;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    module.exports = every;
+
+
+},{"../function/makeIterator_":23}],16:[function(require,module,exports){
+var makeIterator = require('../function/makeIterator_');
+
+    /**
+     * Array filter
+     */
+    function filter(arr, callback, thisObj) {
+        callback = makeIterator(callback, thisObj);
+        var results = [];
+        if (arr == null) {
+            return results;
+        }
+
+        var i = -1, len = arr.length, value;
+        while (++i < len) {
+            value = arr[i];
+            if (callback(value, i, arr)) {
+                results.push(value);
+            }
+        }
+
+        return results;
+    }
+
+    module.exports = filter;
+
+
+
+},{"../function/makeIterator_":23}],17:[function(require,module,exports){
+
+
+    /**
+     * Array forEach
+     */
+    function forEach(arr, callback, thisObj) {
+        if (arr == null) {
+            return;
+        }
+        var i = -1,
+            len = arr.length;
+        while (++i < len) {
+            // we iterate over sparse items since there is no way to make it
+            // work properly on IE 7-8. see #64
+            if ( callback.call(thisObj, arr[i], i, arr) === false ) {
+                break;
+            }
+        }
+    }
+
+    module.exports = forEach;
+
+
+
+},{}],18:[function(require,module,exports){
+
+
+    /**
+     * Array.indexOf
+     */
+    function indexOf(arr, item, fromIndex) {
+        fromIndex = fromIndex || 0;
+        if (arr == null) {
+            return -1;
+        }
+
+        var len = arr.length,
+            i = fromIndex < 0 ? len + fromIndex : fromIndex;
+        while (i < len) {
+            // we iterate over sparse items since there is no way to make it
+            // work properly on IE 7-8. see #64
+            if (arr[i] === item) {
+                return i;
+            }
+
+            i++;
+        }
+
+        return -1;
+    }
+
+    module.exports = indexOf;
+
+
+},{}],19:[function(require,module,exports){
+var makeIterator = require('../function/makeIterator_');
+
+    /**
+     * Array some
+     */
+    function some(arr, callback, thisObj) {
+        callback = makeIterator(callback, thisObj);
+        var result = false;
+        if (arr == null) {
+            return result;
+        }
+
+        var i = -1, len = arr.length;
+        while (++i < len) {
+            // we iterate over sparse items since there is no way to make it
+            // work properly on IE 7-8. see #64
+            if ( callback(arr[i], i, arr) ) {
+                result = true;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    module.exports = some;
+
+
+},{"../function/makeIterator_":23}],20:[function(require,module,exports){
+var unique = require('./unique');
+var append = require('./append');
+
+    /**
+     * Concat multiple arrays and remove duplicates
+     */
+    function union(arrs) {
+        var results = [];
+        var i = -1, len = arguments.length;
+        while (++i < len) {
+            append(results, arguments[i]);
+        }
+
+        return unique(results);
+    }
+
+    module.exports = union;
+
+
+
+},{"./append":12,"./unique":21}],21:[function(require,module,exports){
+var indexOf = require('./indexOf');
+var filter = require('./filter');
+
+    /**
+     * @return {array} Array of unique items
+     */
+    function unique(arr){
+        return filter(arr, isUnique);
+    }
+
+    function isUnique(item, i, arr){
+        return indexOf(arr, item, i+1) === -1;
+    }
+
+    module.exports = unique;
+
+
+
+},{"./filter":16,"./indexOf":18}],22:[function(require,module,exports){
+var unique = require('./unique');
+var filter = require('./filter');
+var contains = require('./contains');
+
+
+    /**
+     * Exclusive OR. Returns items that are present in a single array.
+     * - like ptyhon's `symmetric_difference`
+     */
+    function xor(arr1, arr2) {
+        arr1 = unique(arr1);
+        arr2 = unique(arr2);
+
+        var a1 = filter(arr1, function(item){
+                return !contains(arr2, item);
+            }),
+            a2 = filter(arr2, function(item){
+                return !contains(arr1, item);
+            });
+
+        return a1.concat(a2);
+    }
+
+    module.exports = xor;
+
+
+
+},{"./contains":13,"./filter":16,"./unique":21}],23:[function(require,module,exports){
+var prop = require('./prop');
+var deepMatches = require('../object/deepMatches');
+
+    /**
+     * Converts argument into a valid iterator.
+     * Used internally on most array/object/collection methods that receives a
+     * callback/iterator providing a shortcut syntax.
+     */
+    function makeIterator(src, thisObj){
+        switch(typeof src) {
+            case 'function':
+                // function is the first to improve perf (most common case)
+                return (typeof thisObj !== 'undefined')? function(val, i, arr){
+                    return src.call(thisObj, val, i, arr);
+                } : src;
+            case 'object':
+                // typeof null == "object"
+                return (src != null)? function(val){
+                    return deepMatches(val, src);
+                } : src;
+            case 'string':
+            case 'number':
+                return prop(src);
+            default:
+                return src;
+        }
+    }
+
+    module.exports = makeIterator;
+
+
+
+},{"../object/deepMatches":30,"./prop":24}],24:[function(require,module,exports){
+
+
+    /**
+     * Returns a function that gets a property of the passed object
+     */
+    function prop(name){
+        return function(obj){
+            return obj[name];
         };
     }
 
-    return function nextTick(fn) {
-        setTimeout(fn, 0);
+    module.exports = prop;
+
+
+
+},{}],25:[function(require,module,exports){
+var mixIn = require('../object/mixIn');
+
+    /**
+     * Create Object using prototypal inheritance and setting custom properties.
+     * - Mix between Douglas Crockford Prototypal Inheritance <http://javascript.crockford.com/prototypal.html> and the EcmaScript 5 `Object.create()` method.
+     * @param {object} parent    Parent Object.
+     * @param {object} [props] Object properties.
+     * @return {object} Created object.
+     */
+    function createObject(parent, props){
+        function F(){}
+        F.prototype = parent;
+        return mixIn(new F(), props);
+
+    }
+    module.exports = createObject;
+
+
+
+},{"../object/mixIn":34}],26:[function(require,module,exports){
+var createObject = require('./createObject');
+
+    /**
+    * Inherit prototype from another Object.
+    * - inspired by Nicholas Zackas <http://nczonline.net> Solution
+    * @param {object} child Child object
+    * @param {object} parent    Parent Object
+    */
+    function inheritPrototype(child, parent){
+        var p = createObject(parent.prototype);
+        p.constructor = child;
+        child.prototype = p;
+        child.super_ = parent;
+    }
+
+    module.exports = inheritPrototype;
+
+
+},{"./createObject":25}],27:[function(require,module,exports){
+var isKind = require('./isKind');
+    /**
+     */
+    var isArray = Array.isArray || function (val) {
+        return isKind(val, 'Array');
     };
-})();
+    module.exports = isArray;
 
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
 
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-}
+},{"./isKind":28}],28:[function(require,module,exports){
+var kindOf = require('./kindOf');
+    /**
+     * Check if value is from a specific "kind".
+     */
+    function isKind(val, kind){
+        return kindOf(val) === kind;
+    }
+    module.exports = isKind;
 
-// TODO(shtylman)
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
 
-},{}]},{},[1])
+},{"./kindOf":29}],29:[function(require,module,exports){
+
+
+    var _rKind = /^\[object (.*)\]$/,
+        _toString = Object.prototype.toString,
+        UNDEF;
+
+    /**
+     * Gets the "kind" of value. (e.g. "String", "Number", etc)
+     */
+    function kindOf(val) {
+        if (val === null) {
+            return 'Null';
+        } else if (val === UNDEF) {
+            return 'Undefined';
+        } else {
+            return _rKind.exec( _toString.call(val) )[1];
+        }
+    }
+    module.exports = kindOf;
+
+
+},{}],30:[function(require,module,exports){
+var forOwn = require('./forOwn');
+var isArray = require('../lang/isArray');
+
+    function containsMatch(array, pattern) {
+        var i = -1, length = array.length;
+        while (++i < length) {
+            if (deepMatches(array[i], pattern)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function matchArray(target, pattern) {
+        var i = -1, patternLength = pattern.length;
+        while (++i < patternLength) {
+            if (!containsMatch(target, pattern[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function matchObject(target, pattern) {
+        var result = true;
+        forOwn(pattern, function(val, key) {
+            if (!deepMatches(target[key], val)) {
+                // Return false to break out of forOwn early
+                return (result = false);
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * Recursively check if the objects match.
+     */
+    function deepMatches(target, pattern){
+        if (target && typeof target === 'object') {
+            if (isArray(target) && isArray(pattern)) {
+                return matchArray(target, pattern);
+            } else {
+                return matchObject(target, pattern);
+            }
+        } else {
+            return target === pattern;
+        }
+    }
+
+    module.exports = deepMatches;
+
+
+
+},{"../lang/isArray":27,"./forOwn":32}],31:[function(require,module,exports){
+
+
+    var _hasDontEnumBug,
+        _dontEnums;
+
+    function checkDontEnum(){
+        _dontEnums = [
+                'toString',
+                'toLocaleString',
+                'valueOf',
+                'hasOwnProperty',
+                'isPrototypeOf',
+                'propertyIsEnumerable',
+                'constructor'
+            ];
+
+        _hasDontEnumBug = true;
+
+        for (var key in {'toString': null}) {
+            _hasDontEnumBug = false;
+        }
+    }
+
+    /**
+     * Similar to Array/forEach but works over object properties and fixes Don't
+     * Enum bug on IE.
+     * based on: http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
+     */
+    function forIn(obj, fn, thisObj){
+        var key, i = 0;
+        // no need to check if argument is a real object that way we can use
+        // it for arrays, functions, date, etc.
+
+        //post-pone check till needed
+        if (_hasDontEnumBug == null) checkDontEnum();
+
+        for (key in obj) {
+            if (exec(fn, obj, key, thisObj) === false) {
+                break;
+            }
+        }
+
+        if (_hasDontEnumBug) {
+            while (key = _dontEnums[i++]) {
+                // since we aren't using hasOwn check we need to make sure the
+                // property was overwritten
+                if (obj[key] !== Object.prototype[key]) {
+                    if (exec(fn, obj, key, thisObj) === false) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    function exec(fn, obj, key, thisObj){
+        return fn.call(thisObj, obj[key], key, obj);
+    }
+
+    module.exports = forIn;
+
+
+
+},{}],32:[function(require,module,exports){
+var hasOwn = require('./hasOwn');
+var forIn = require('./forIn');
+
+    /**
+     * Similar to Array/forEach but works over object properties and fixes Don't
+     * Enum bug on IE.
+     * based on: http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
+     */
+    function forOwn(obj, fn, thisObj){
+        forIn(obj, function(val, key){
+            if (hasOwn(obj, key)) {
+                return fn.call(thisObj, obj[key], key, obj);
+            }
+        });
+    }
+
+    module.exports = forOwn;
+
+
+
+},{"./forIn":31,"./hasOwn":33}],33:[function(require,module,exports){
+
+
+    /**
+     * Safer Object.hasOwnProperty
+     */
+     function hasOwn(obj, prop){
+         return Object.prototype.hasOwnProperty.call(obj, prop);
+     }
+
+     module.exports = hasOwn;
+
+
+
+},{}],34:[function(require,module,exports){
+var forOwn = require('./forOwn');
+
+    /**
+    * Combine properties from all the objects into first one.
+    * - This method affects target object in place, if you want to create a new Object pass an empty object as first param.
+    * @param {object} target    Target Object
+    * @param {...object} objects    Objects to be combined (0...n objects).
+    * @return {object} Target Object.
+    */
+    function mixIn(target, objects){
+        var i = 0,
+            n = arguments.length,
+            obj;
+        while(++i < n){
+            obj = arguments[i];
+            if (obj != null) {
+                forOwn(obj, copyProp, target);
+            }
+        }
+        return target;
+    }
+
+    function copyProp(val, key){
+        this[key] = val;
+    }
+
+    module.exports = mixIn;
+
+
+},{"./forOwn":32}]},{},[1])
 ;
