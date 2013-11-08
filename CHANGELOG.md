@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.3
+
+ * Use event delegation for listening to clicks
+ * Use `emitter-component` for event emitter
+ * Use [mout](http://moutjs.com/)
 
 ## 0.0.2
 
