@@ -200,7 +200,7 @@ body.hut-modal-open {
   /* Slide down from top */
   /* Wait until it is slid up to change the height */
   transition: top 0.3s,
-        height 0 0.3s;
+        height 0s 0.3s;
   background-color: rgba(220, 220, 220, 0.9);
 }
 
