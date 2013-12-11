@@ -1,10 +1,4 @@
 @import "hut-base";
-@import "./variables";
-
-/* Disable scroll when modal is open */
-body.hut-modal-open {
-    overflow: hidden;
-}
 
 .hut-modal {
     position: fixed;
@@ -20,53 +14,41 @@ body.hut-modal-open {
 
     /* Slide down from top */
     /* Wait until it is slid up to change the height */
-    transition:
-        top var(modal-slide-time),
-        height 0s var(modal-slide-time);
+    transition: top 0.3s, height 0s 0.3s;
 
-    background-color: var(modal-backdrop-color);
+    background-color: rgba(238, 238, 238, 0.8);
 }
 
 .hut-modal.modal-shown {
     top: 0;
     height: 100%;
-    padding: var(modal-offset-y) var(modal-offset-x);
     overflow: auto;
+
+    /* Offset for the dialog */
+    padding: 2rem 1rem;
 
     /* Slide down from the top */
     /* Do not transition height when closing */
-    transition: top var(modal-slide-time);
+    transition: top 0.3s;
 }
 
 .hut-modal .modal-dialog {
-    max-width: var(modal-width);
+    max-width: 500px;
     margin: 0 auto;
-
     background-color: #FFF;
-
-    border: 1px solid var(modal-border-color);
-    border-radius: var(modal-border-radius);
-
-    box-shadow:
-        var(modal-shadow-left)
-        var(modal-shadow-right)
-        var(modal-shadow-blur)
-        var(modal-shadow-size)
-        var(modal-shadow-color);
+    border: 1px solid #999;
 }
 
 .hut-modal .modal-header {
-    padding: 0 var(modal-padding);
-    border-bottom: 1px solid var(modal-separator-color);
+    margin: 0 1rem;
 }
 
 .hut-modal .modal-content {
-    padding: 10px var(modal-padding);
+    margin: 0 1rem;
     overflow: hidden;
 }
 
 .hut-modal .modal-footer {
-    padding: 10px var(modal-padding);
-    border-top: 1px solid var(modal-separator-color);
+    margin: 0 1rem 1rem 1rem;
     text-align: right;
 }
