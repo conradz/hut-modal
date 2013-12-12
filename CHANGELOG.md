@@ -1,8 +1,13 @@
 # Changelog
 
-## next
+## 0.1.0
 
+ * Minimal styling
+ * Use wrapper function instead of constructor (`modal(el)` instead of
+   `new Modal(el)`)
  * Update `mout` to v0.8.0
+ * Update `chi-classes` to v0.1.0
+ * Update `hut-base` to v0.2.0
 
 ## 0.0.3
 
