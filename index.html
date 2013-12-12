@@ -7,20 +7,21 @@
         <link rel="stylesheet" href="example.css">
     </head>
     <body>
-        <div class="container">
-            <header>
-                <h1>Modal Example</h1>
-            </header>
+        <h1>Modal Example</h1>
 
-            <p>
-                See the hut-modal project
-                <a href="https://github.com/conradz/hut-modal">on Github</a>.
-            </p>
+        <p>
+            <a href="https://github.com/conradz/hut-modal">View code on Github</a>
+        </p>
 
-            <p>
-                <button id="show-modal">Show Example Modal</button>
-            </p>
-        </div>
+        <p>
+            <a href="https://github.com/conradz/hut-modal">hut-modal</a> is a
+            simple HTML modal package that displays a simple dialog prompt. It
+            contains a minimum amount of styling so that you can customize it
+            to your needs. Click the button below to see an example of the
+            modal in action.
+        </p>
+
+        <p><button id="show-modal">Show Modal</button></p>
 
         <div id="example-modal" class="hut-modal">
             <div class="modal-dialog">
@@ -28,6 +29,7 @@
                     <h3>My Modal</h3>
                 </header>
                 <section class="modal-content">
+                    <p><img src="http://placekitten.com/g/250/200"></p>
                     <p>
                         This is a test modal. You can put whatever you want
                         here. Of course, you should have more interesting stuff
@@ -35,13 +37,13 @@
                     </p>
                 </section>
                 <footer class="modal-footer">
-                    <div class="buttons">
-                        <button data-result="ok" autofocus>OK</button>
-                        <button data-result="cancel">Cancel</button>
-                    </div>
+                    <button data-result="ok" autofocus>OK</button>
+                    <button data-result="cancel">Cancel</button>
                 </footer>
             </div>
         </div>
+
+        <p id="status"></p>
 
         <script src="example.js"></script>
     </body>

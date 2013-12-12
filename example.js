@@ -1,21 +1,20 @@
 ;(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
-/*global console */
-
 var Modal = require('../'),
     events = require('chi-events'),
     document = window.document;
 
 var modal = new Modal(document.querySelector('#example-modal')),
-    show = document.querySelector('#show-modal');
+    show = document.querySelector('#show-modal'),
+    status = document.querySelector('#status');
 
 events(show).on('click', function() {
     modal.show();
 });
 
 modal.on('result', function(result) {
-    console.log('Result: ' + result);
+    status.textContent = 'Result: ' + result;
 });
 
 },{"../":2,"chi-events":7}],2:[function(require,module,exports){
@@ -27,7 +26,9 @@ var Emitter = require('emitter-component'),
     inheritPrototype = require('mout/lang/inheritPrototype'),
     document = window.document;
 
-module.exports = Modal;
+module.exports = function(element) {
+    return new Modal(element);
+};
 
 function Modal(element) {
     Emitter.call(this);
@@ -73,7 +74,9 @@ Modal.prototype._clicked = function(button) {
     this.emit('result', result);
 };
 
-},{"chi-classes":3,"chi-events":7,"emitter-component":10,"mout/lang/inheritPrototype":26}],3:[function(require,module,exports){
+},{"chi-classes":3,"chi-events":7,"emitter-component":10,"mout/lang/inheritPrototype":27}],3:[function(require,module,exports){
+'use strict';
+
 var union = require('mout/array/union'),
     difference = require('mout/array/difference'),
     xor = require('mout/array/xor'),
@@ -90,6 +93,7 @@ function split(input) {
 
 function modifier(action) {
     function modify(node) {
+        /*jshint validthis: true */
         var existing = split(node.className);
         node.className = action(existing, this).join(' ');
     }
@@ -135,7 +139,7 @@ function classList() {
 
 module.exports = classList;
 
-},{"flatten-list":4,"mout/array/contains":13,"mout/array/difference":14,"mout/array/every":15,"mout/array/forEach":17,"mout/array/union":20,"mout/array/xor":22}],4:[function(require,module,exports){
+},{"flatten-list":4,"mout/array/contains":12,"mout/array/difference":13,"mout/array/every":14,"mout/array/forEach":16,"mout/array/union":20,"mout/array/xor":22}],4:[function(require,module,exports){
 var isList;
 if (typeof window !== 'undefined') {
     // Running in a browser
@@ -297,7 +301,7 @@ function fix(trigger) {
     return fixedTrigger;
 }
 
-},{"mout/array/forEach":17}],7:[function(require,module,exports){
+},{"mout/array/forEach":16}],7:[function(require,module,exports){
 'use strict';
 
 var flatten = require('flatten-list'),
@@ -375,7 +379,7 @@ function createEvent(event) {
     return e;
 }
 
-},{"./delegate":5,"./ie-bug":6,"flatten-list":9,"mout/array/forEach":17}],8:[function(require,module,exports){
+},{"./delegate":5,"./ie-bug":6,"flatten-list":9,"mout/array/forEach":16}],8:[function(require,module,exports){
 // Get the right method, including vendor prefixes
 var proto = Element.prototype,
     method = (
@@ -438,12 +442,6 @@ if (method) {
 },{}],9:[function(require,module,exports){
 module.exports=require(4)
 },{}],10:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var index = require('indexof');
 
 /**
  * Expose `Emitter`.
@@ -512,7 +510,7 @@ Emitter.prototype.once = function(event, fn){
     fn.apply(this, arguments);
   }
 
-  fn._off = on;
+  on.fn = fn;
   this.on(event, on);
   return this;
 };
@@ -550,8 +548,14 @@ Emitter.prototype.removeEventListener = function(event, fn){
   }
 
   // remove specific handler
-  var i = index(callbacks, fn._off || fn);
-  if (~i) callbacks.splice(i, 1);
+  var cb;
+  for (var i = 0; i < callbacks.length; i++) {
+    cb = callbacks[i];
+    if (cb === fn || cb.fn === fn) {
+      callbacks.splice(i, 1);
+      break;
+    }
+  }
   return this;
 };
 
@@ -603,18 +607,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{"indexof":11}],11:[function(require,module,exports){
-
-var indexOf = [].indexOf;
-
-module.exports = function(arr, obj){
-  if (indexOf) return arr.indexOf(obj);
-  for (var i = 0; i < arr.length; ++i) {
-    if (arr[i] === obj) return i;
-  }
-  return -1;
-};
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 
 
     /**
@@ -637,7 +630,7 @@ module.exports = function(arr, obj){
     module.exports = append;
 
 
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var indexOf = require('./indexOf');
 
     /**
@@ -649,18 +642,19 @@ var indexOf = require('./indexOf');
     module.exports = contains;
 
 
-},{"./indexOf":18}],14:[function(require,module,exports){
+},{"./indexOf":17}],13:[function(require,module,exports){
 var unique = require('./unique');
 var filter = require('./filter');
 var some = require('./some');
 var contains = require('./contains');
+var slice = require('./slice');
 
 
     /**
      * Return a new Array with elements that aren't present in the other Arrays.
      */
     function difference(arr) {
-        var arrs = Array.prototype.slice.call(arguments, 1),
+        var arrs = slice(arguments, 1),
             result = filter(unique(arr), function(needle){
                 return !some(arrs, function(haystack){
                     return contains(haystack, needle);
@@ -673,7 +667,7 @@ var contains = require('./contains');
 
 
 
-},{"./contains":13,"./filter":16,"./some":19,"./unique":21}],15:[function(require,module,exports){
+},{"./contains":12,"./filter":15,"./slice":18,"./some":19,"./unique":21}],14:[function(require,module,exports){
 var makeIterator = require('../function/makeIterator_');
 
     /**
@@ -702,7 +696,7 @@ var makeIterator = require('../function/makeIterator_');
     module.exports = every;
 
 
-},{"../function/makeIterator_":23}],16:[function(require,module,exports){
+},{"../function/makeIterator_":24}],15:[function(require,module,exports){
 var makeIterator = require('../function/makeIterator_');
 
     /**
@@ -730,7 +724,7 @@ var makeIterator = require('../function/makeIterator_');
 
 
 
-},{"../function/makeIterator_":23}],17:[function(require,module,exports){
+},{"../function/makeIterator_":24}],16:[function(require,module,exports){
 
 
     /**
@@ -755,7 +749,7 @@ var makeIterator = require('../function/makeIterator_');
 
 
 
-},{}],18:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 
 
     /**
@@ -783,6 +777,22 @@ var makeIterator = require('../function/makeIterator_');
     }
 
     module.exports = indexOf;
+
+
+},{}],18:[function(require,module,exports){
+
+
+    var arrSlice = Array.prototype.slice;
+
+    /**
+     * Create slice of source array or array-like object
+     */
+    function slice(arr, start, end){
+        return arrSlice.call(arr, start, end);
+    }
+
+    module.exports = slice;
+
 
 
 },{}],19:[function(require,module,exports){
@@ -814,7 +824,7 @@ var makeIterator = require('../function/makeIterator_');
     module.exports = some;
 
 
-},{"../function/makeIterator_":23}],20:[function(require,module,exports){
+},{"../function/makeIterator_":24}],20:[function(require,module,exports){
 var unique = require('./unique');
 var append = require('./append');
 
@@ -835,26 +845,34 @@ var append = require('./append');
 
 
 
-},{"./append":12,"./unique":21}],21:[function(require,module,exports){
-var indexOf = require('./indexOf');
+},{"./append":11,"./unique":21}],21:[function(require,module,exports){
 var filter = require('./filter');
 
     /**
      * @return {array} Array of unique items
      */
-    function unique(arr){
-        return filter(arr, isUnique);
+    function unique(arr, compare){
+        compare = compare || isEqual;
+        return filter(arr, function(item, i, arr){
+            var n = arr.length;
+            while (++i < n) {
+                if ( compare(item, arr[i]) ) {
+                    return false;
+                }
+            }
+            return true;
+        });
     }
 
-    function isUnique(item, i, arr){
-        return indexOf(arr, item, i+1) === -1;
+    function isEqual(a, b){
+        return a === b;
     }
 
     module.exports = unique;
 
 
 
-},{"./filter":16,"./indexOf":18}],22:[function(require,module,exports){
+},{"./filter":15}],22:[function(require,module,exports){
 var unique = require('./unique');
 var filter = require('./filter');
 var contains = require('./contains');
@@ -882,7 +900,22 @@ var contains = require('./contains');
 
 
 
-},{"./contains":13,"./filter":16,"./unique":21}],23:[function(require,module,exports){
+},{"./contains":12,"./filter":15,"./unique":21}],23:[function(require,module,exports){
+
+
+    /**
+     * Returns the first argument provided to it.
+     */
+    function identity(val){
+        return val;
+    }
+
+    module.exports = identity;
+
+
+
+},{}],24:[function(require,module,exports){
+var identity = require('./identity');
 var prop = require('./prop');
 var deepMatches = require('../object/deepMatches');
 
@@ -892,22 +925,24 @@ var deepMatches = require('../object/deepMatches');
      * callback/iterator providing a shortcut syntax.
      */
     function makeIterator(src, thisObj){
+        if (src == null) {
+            return identity;
+        }
         switch(typeof src) {
             case 'function':
                 // function is the first to improve perf (most common case)
+                // also avoid using `Function#call` if not needed, which boosts
+                // perf a lot in some cases
                 return (typeof thisObj !== 'undefined')? function(val, i, arr){
                     return src.call(thisObj, val, i, arr);
                 } : src;
             case 'object':
-                // typeof null == "object"
-                return (src != null)? function(val){
+                return function(val){
                     return deepMatches(val, src);
-                } : src;
+                };
             case 'string':
             case 'number':
                 return prop(src);
-            default:
-                return src;
         }
     }
 
@@ -915,7 +950,7 @@ var deepMatches = require('../object/deepMatches');
 
 
 
-},{"../object/deepMatches":30,"./prop":24}],24:[function(require,module,exports){
+},{"../object/deepMatches":31,"./identity":23,"./prop":25}],25:[function(require,module,exports){
 
 
     /**
@@ -931,7 +966,7 @@ var deepMatches = require('../object/deepMatches');
 
 
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 var mixIn = require('../object/mixIn');
 
     /**
@@ -951,7 +986,7 @@ var mixIn = require('../object/mixIn');
 
 
 
-},{"../object/mixIn":34}],26:[function(require,module,exports){
+},{"../object/mixIn":35}],27:[function(require,module,exports){
 var createObject = require('./createObject');
 
     /**
@@ -970,7 +1005,7 @@ var createObject = require('./createObject');
     module.exports = inheritPrototype;
 
 
-},{"./createObject":25}],27:[function(require,module,exports){
+},{"./createObject":26}],28:[function(require,module,exports){
 var isKind = require('./isKind');
     /**
      */
@@ -980,7 +1015,7 @@ var isKind = require('./isKind');
     module.exports = isArray;
 
 
-},{"./isKind":28}],28:[function(require,module,exports){
+},{"./isKind":29}],29:[function(require,module,exports){
 var kindOf = require('./kindOf');
     /**
      * Check if value is from a specific "kind".
@@ -991,7 +1026,7 @@ var kindOf = require('./kindOf');
     module.exports = isKind;
 
 
-},{"./kindOf":29}],29:[function(require,module,exports){
+},{"./kindOf":30}],30:[function(require,module,exports){
 
 
     var _rKind = /^\[object (.*)\]$/,
@@ -1013,7 +1048,7 @@ var kindOf = require('./kindOf');
     module.exports = kindOf;
 
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 var forOwn = require('./forOwn');
 var isArray = require('../lang/isArray');
 
@@ -1070,7 +1105,7 @@ var isArray = require('../lang/isArray');
 
 
 
-},{"../lang/isArray":27,"./forOwn":32}],31:[function(require,module,exports){
+},{"../lang/isArray":28,"./forOwn":33}],32:[function(require,module,exports){
 
 
     var _hasDontEnumBug,
@@ -1134,7 +1169,7 @@ var isArray = require('../lang/isArray');
 
 
 
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 var hasOwn = require('./hasOwn');
 var forIn = require('./forIn');
 
@@ -1155,7 +1190,7 @@ var forIn = require('./forIn');
 
 
 
-},{"./forIn":31,"./hasOwn":33}],33:[function(require,module,exports){
+},{"./forIn":32,"./hasOwn":34}],34:[function(require,module,exports){
 
 
     /**
@@ -1169,7 +1204,7 @@ var forIn = require('./forIn');
 
 
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 var forOwn = require('./forOwn');
 
     /**
@@ -1199,5 +1234,5 @@ var forOwn = require('./forOwn');
     module.exports = mixIn;
 
 
-},{"./forOwn":32}]},{},[1])
+},{"./forOwn":33}]},{},[1])
 ;
