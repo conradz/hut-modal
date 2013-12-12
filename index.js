@@ -6,7 +6,9 @@ var Emitter = require('emitter-component'),
     inheritPrototype = require('mout/lang/inheritPrototype'),
     document = window.document;
 
-module.exports = Modal;
+module.exports = function(element) {
+    return new Modal(element);
+};
 
 function Modal(element) {
     Emitter.call(this);

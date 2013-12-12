@@ -15,7 +15,7 @@ A simple HTML modal module that displays a simple dialog prompt. It contains a m
  2. Import styling using [rework-npm](https://github.com/conradz/rework-npm) -
     `@import "hut-modal";`
  3. Load JS using [browserify](https://github.com/substack/node-browserify) -
-    `var Modal = require('hut-modal');`
+    `var modal = require('hut-modal');`
 
 
 ## code
@@ -38,13 +38,13 @@ A simple HTML modal module that displays a simple dialog prompt. It contains a m
 ```
 
 ```js
-var Modal = require('hut-modal');
+var modal = require('hut-modal');
 
-var myModal = new Modal(document.querySelector('#my-modal'));
+var m = modal(document.querySelector('#my-modal'));
 
 // When a [data-result] element is clicked, it will hide the modal and trigger
 // the result event:
-myModal.on('result', function(result) {
+m.on('result', function(result) {
     if (result === "yes") {
         console.log('Hey that was cool!');
     } else if (result === "no") {
@@ -56,9 +56,9 @@ myModal.show();
 ```
 ## reference
 
-### `new Modal(element)`
+### `modal(element)`
 
-Creates a new Modal object that manages the modal specified by `element`. The
+Creates a new `Modal` object that manages the modal specified by `element`. The
 element must have a similar structure as the example above.
 
 ### `#show()`
