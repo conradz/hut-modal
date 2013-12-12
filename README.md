@@ -3,7 +3,7 @@
 [![NPM](https://nodei.co/npm/hut-modal.png?compact=true)](https://nodei.co/npm/hut-modal/)
 
 [![Build Status](https://drone.io/github.com/conradz/hut-modal/status.png)](https://drone.io/github.com/conradz/hut-modal/latest)
-[![Dependency Status](https://gemnasium.com/conradz/hut-modal.png)](https://gemnasium.com/conradz/hut-modal)
+[![Dependency Status](https://david-dm.org/conradz/hut-modal.png)](https://david-dm.org/conradz/hut-modal)
 
 [![Selenium Test Status](https://saucelabs.com/browser-matrix/hut-modal.svg)](https://saucelabs.com/u/hut-modal)
 
