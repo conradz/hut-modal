@@ -1,17 +1,24 @@
 # hut-modal
 
-[![NPM](https://nodei.co/npm/hut-modal.png?compact=true)](https://nodei.co/npm/hut-modal/)
-
 [![Build Status](https://drone.io/github.com/conradz/hut-modal/status.png)](https://drone.io/github.com/conradz/hut-modal/latest)
 [![Dependency Status](https://david-dm.org/conradz/hut-modal.png)](https://david-dm.org/conradz/hut-modal)
 
 [![Selenium Test Status](https://saucelabs.com/browser-matrix/hut-modal.svg)](https://saucelabs.com/u/hut-modal)
 
-HTML UI Toolkit modal component - Show modals in your app with JS.
+## intro
 
-Check out the [example](http://conradz.github.io/hut-modal/)!
+A simple HTML modal module that displays a simple dialog prompt. It contains a minimum amount of styling so that you can customize it to your needs. See the [example](http://conradz.github.io/hut-modal/) to see it in action.
 
-## Example
+## usage
+
+ 1. Install using [npm](https://npmjs.org/) - `npm install --save hut-modal`
+ 2. Import styling using [rework-npm](https://github.com/conradz/rework-npm) -
+    `@import "hut-modal";`
+ 3. Load JS using [browserify](https://github.com/substack/node-browserify) -
+    `var Modal = require('hut-modal');`
+
+
+## code
 
 ```html
 <div id="my-modal" class="hut-modal">
@@ -47,8 +54,7 @@ myModal.on('result', function(result) {
 
 myModal.show();
 ```
-
-## Reference
+## reference
 
 ### `new Modal(element)`
 
@@ -74,11 +80,6 @@ Triggered immediately after the modal is hidden.
 
 ### Event: `result(value)`
 
-Triggered when an element with the `data-result` attribute is clicked. The modal
-will be automatically hidden and `value` will be the value of the `data-result`
-attribute of the element that was clicked.
-
-## Styling
-
-Set the variables that are defined in `variables.css` file to change the
-styling. You can also override the styles in your own stylesheet.
+Triggered when an element with the `data-result` attribute is clicked. The
+modal will be automatically hidden and `value` will be the value of the
+`data-result` attribute of the element that was clicked.
