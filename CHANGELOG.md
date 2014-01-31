@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+ * Set z-index property to 100
+
 ## 0.1.0
 
  * Minimal styling
