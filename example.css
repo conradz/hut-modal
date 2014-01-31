@@ -150,6 +150,7 @@ input[type="radio"] {
   /* Hide modal until it is shown */
   height: 0;
   width: 100%;
+  z-index: 100;
   /* Slide down from top */
   /* Wait until it is slid up to change the height */
   transition: top 0.3s, height 0s 0.3s;
